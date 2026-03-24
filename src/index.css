@@ -1,0 +1,87 @@
+@import "tailwindcss";
+
+@theme {
+  --color-ocean-surface: #87ceeb;
+  --color-ocean-sunlightStart: #00b4d8;
+  --color-ocean-sunlightEnd: #0077b6;
+  --color-ocean-twilightStart: #0077b6;
+  --color-ocean-twilightEnd: #023e8a;
+  --color-ocean-midnightStart: #023e8a;
+  --color-ocean-midnightEnd: #03045e;
+  --color-ocean-abyssStart: #03045e;
+  --color-ocean-abyssEnd: #000005;
+
+  --color-accent-cyan: #00d4ff;
+  --color-accent-bio: #39ff14;
+  --color-accent-purple: #9b5de5;
+  --color-accent-gold: #ffd166;
+  --color-accent-red: #ef233c;
+
+  --font-head: 'Outfit', sans-serif;
+  --font-body: 'DM Sans', sans-serif;
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+    scrollbar-color: #00d4ff #03045e;
+    scrollbar-width: thin;
+  }
+
+  body {
+    font-family: var(--font-body);
+    color: #e8f4f8;
+    background-color: var(--color-ocean-sunlightEnd);
+    overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* Custom scrollbar */
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: #000010; }
+  ::-webkit-scrollbar-thumb {
+    background: linear-gradient(to bottom, #00d4ff, #9b5de5);
+    border-radius: 99px;
+  }
+}
+
+@layer components {
+  .clip-text-gradient {
+    color: transparent;
+    background-clip: text;
+  }
+}
+
+/* Day Mode overrides */
+body.day-mode .section-hero { background: linear-gradient(180deg, #b0e2ff 0%, #87ceeb 30%, #48cae4 60%, #0096c7 100%); }
+body.day-mode .section-sunlight { background: linear-gradient(180deg, #87ceeb 0%, #00b4d8 50%, #0077b6 100%); }
+body.day-mode .section-twilight { background: linear-gradient(180deg, #0077b6 0%, #023e8a 100%); }
+body.day-mode .section-midnight { background: linear-gradient(180deg, #023e8a 0%, #03045e 100%); }
+body.day-mode .section-abyss { background: linear-gradient(180deg, #03045e 0%, #000030 100%); }
+
+/* Animations that are easier in plain CSS */
+@keyframes wave-move {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+@keyframes wave-morph {
+  0% { d: path("M0,160 C360,260 720,60 1080,160 C1260,210 1350,180 1440,160 L1440,320 L0,320Z"); }
+  100% { d: path("M0,200 C360,100 720,260 1080,170 C1260,130 1380,200 1440,205 L1440,320 L0,320Z"); }
+}
+
+.wave-1 { animation: wave-move 8s linear infinite; }
+.wave-2 { animation: wave-move 12s linear infinite reverse; }
+.wave-3 { animation: wave-move 6s linear infinite; }
+.wave-path { animation: wave-morph 6s ease-in-out infinite alternate; }
+
+@keyframes cursor-blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
+.typewriter-cursor::after {
+  content: '|';
+  animation: cursor-blink 0.8s step-end infinite;
+  color: #00d4ff;
+}
