@@ -6,6 +6,7 @@ export function useAudioContext() {
   const cycloneNodeRef = useRef(null);
   const lightningNodeRef = useRef(null);
   const masterGainRef = useRef(null);
+  const beachNodeRef = useRef(null);
 
   const initAudio = useCallback(() => {
     if (audioCtxRef.current) {
@@ -107,6 +108,43 @@ export function useAudioContext() {
     };
     // Start bubbles after a short delay
     setTimeout(triggerBubble, 1200);
+
+    // ── SEA BEACH WAVES (Pink noise + Slow LFO) ────────────────────
+    const beachNoiseBuffer = ctx.createBuffer(1, ctx.sampleRate * 5, ctx.sampleRate);
+    const beachOutput = beachNoiseBuffer.getChannelData(0);
+    for (let i = 0; i < beachNoiseBuffer.length; i++) {
+      beachOutput[i] = Math.random() * 2 - 1;
+    }
+    const beachSource = ctx.createBufferSource();
+    beachSource.buffer = beachNoiseBuffer;
+    beachSource.loop = true;
+
+    const beachFilter = ctx.createBiquadFilter();
+    beachFilter.type = 'lowpass';
+    beachFilter.frequency.value = 400;
+
+    const beachGain = ctx.createGain();
+    beachGain.gain.value = 0.4;
+    
+    // Wave surging LFO
+    const beachLfo = ctx.createOscillator();
+    beachLfo.type = 'sine';
+    beachLfo.frequency.value = 0.15; // Slow waves
+    const beachLfoGain = ctx.createGain();
+    beachLfoGain.gain.value = 0.3;
+    beachLfo.connect(beachLfoGain);
+    beachLfoGain.connect(beachGain.gain);
+    
+    beachSource.connect(beachFilter);
+    beachFilter.connect(beachGain);
+    beachGain.connect(masterGain);
+    
+    beachSource.start();
+    beachLfo.start();
+
+    // Store ref to control volume based on depth
+    const beachControl = { source: beachSource, gain: beachGain };
+    beachNodeRef.current = beachGain;
 
     // ── CYCLONE WHITE NOISE (Looped + Sweeping Filter) ─────────────
     const bufferSize = ctx.sampleRate * 4; // 4 seconds
@@ -210,6 +248,15 @@ export function useAudioContext() {
     }
   }, []);
 
+  const updateBeachVolume = useCallback((depth) => {
+    if (!beachNodeRef.current || !audioCtxRef.current) return;
+    const ctx = audioCtxRef.current;
+    const now = ctx.currentTime;
+    // Surface waves fade out by 20% depth
+    const volume = Math.max(0, 0.4 * (1 - depth * 5));
+    beachNodeRef.current.gain.setTargetAtTime(volume, now, 0.5);
+  }, []);
+
   const stopCycloneAudio = useCallback(() => {
     if (!audioCtxRef.current || !cycloneNodeRef.current) return;
     const ctx = audioCtxRef.current;
@@ -244,6 +291,7 @@ export function useAudioContext() {
     isInitialized: !!audioCtxRef.current,
     initAudio, 
     toggleMasterMute, 
+    updateBeachVolume,
     triggerCycloneAudio, 
     stopCycloneAudio, 
     triggerLightningSound 

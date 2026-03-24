@@ -9,8 +9,9 @@ const ZONES = [
   { depth: 11000, name: 'Hadal Trench', temp: -2,  pressure: 1100 },
 ];
 
-export default function DepthHUD({ scrollProgress }) {
+export default function DepthHUD({ scrollProgress, scannedCount = 0 }) {
   const [glitch, setGlitch] = useState(false);
+  const totalSpecies = 15;
 
   // Interpolate actual meter depth from scroll progress 0→1 mapped to 0→11000m
   const depthM = Math.round(scrollProgress * 11000);
@@ -70,6 +71,12 @@ export default function DepthHUD({ scrollProgress }) {
         {/* Title */}
         <div style={{ fontSize: '0.6rem', letterSpacing: '0.15em', opacity: 0.6, borderBottom: '1px solid #333', paddingBottom: '4px', marginBottom: '2px' }}>
           ◈ SUB-NAUTICAL HUD
+        </div>
+
+        {/* Discovery Counter */}
+        <div className="flex items-center gap-2 mb-1">
+          <span className="text-[0.6rem] opacity-60 uppercase">Discovery Log:</span>
+          <span className="font-bold">{scannedCount}/{totalSpecies}</span>
         </div>
 
         {/* Zone */}

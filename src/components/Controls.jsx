@@ -1,11 +1,15 @@
-import { useState, useEffect, useRef } from 'react';
-import { Sun, Moon, Volume2, VolumeX } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Sun, Moon, Volume2, VolumeX, Eye, EyeOff } from 'lucide-react';
 
-export default function Controls({ isAudioEnabled, onToggleAudio }) {
+export default function Controls({ 
+  isAudioEnabled, 
+  onToggleAudio,
+  isSubmarineMode,
+  onToggleSubmarine
+}) {
   const [isDayMode, setIsDayMode] = useState(false);
 
   useEffect(() => {
-    // Toggle body class for day mode
     if (isDayMode) {
       document.body.classList.add('day-mode');
     } else {
@@ -22,6 +26,19 @@ export default function Controls({ isAudioEnabled, onToggleAudio }) {
       >
         {isDayMode ? <Moon size={16} /> : <Sun size={16} />}
         <span className="max-md:hidden">{isDayMode ? 'Deep Mode' : 'Day Mode'}</span>
+      </button>
+
+      {/* Submarine Mode Toggle */}
+      <button 
+        onClick={onToggleSubmarine}
+        className={`flex items-center justify-center w-[38px] h-[38px] rounded-full transition-all shadow-lg border ${
+          isSubmarineMode 
+            ? 'bg-[#00d4ff] border-white text-[#00143c]' 
+            : 'bg-[#00143c]/60 backdrop-blur-md border-[#00d4ff]/30 text-white hover:bg-[#00d4ff]/20'
+        }`}
+        aria-label="Toggle Submarine Mode"
+      >
+        {isSubmarineMode ? <Eye size={18} /> : <EyeOff size={18} />}
       </button>
 
       <button 

@@ -8,9 +8,12 @@ import TwilightZone from './sections/TwilightZone';
 import MidnightZone from './sections/MidnightZone';
 import AbyssZone from './sections/AbyssZone';
 import HadalZone from './sections/HadalZone';
+import ShipwreckZone from './sections/ShipwreckZone';
 import { CreatureModal } from './components/CreatureCard';
 import DepthHUD from './components/DepthHUD';
 import IntroScreen from './components/IntroScreen';
+import SubmarineGlass from './components/SubmarineGlass';
+import PressureDistortion from './components/PressureDistortion';
 import { useScrollDepth, useMouseParallax } from './hooks/useScrollDepth';
 import { useAudioContext } from './hooks/useAudioContext';
 import Lenis from '@studio-freight/lenis';
@@ -20,6 +23,8 @@ function App() {
   const [selectedCreature, setSelectedCreature] = useState(null);
   const [loading, setLoading] = useState(true);
   const [showIntro, setShowIntro] = useState(true);
+  const [isSubmarineMode, setIsSubmarineMode] = useState(false);
+  const [scannedSpecies, setScannedSpecies] = useState(new Set());
   const [isCycloneActive, setIsCycloneActive] = useState(false);
   const [scrollProgress, setScrollProgress] = useState(0);
   const [isVoid, setIsVoid] = useState(false);
@@ -31,10 +36,21 @@ function App() {
     isInitialized,
     initAudio: _initAudio, 
     toggleMasterMute, 
+    updateBeachVolume,
     triggerCycloneAudio, 
     stopCycloneAudio, 
     triggerLightningSound 
   } = useAudioContext();
+
+  const handleScan = (creature) => {
+    if (!creature) return;
+    setScannedSpecies(prev => {
+      const next = new Set(prev);
+      next.add(creature.id);
+      return next;
+    });
+    setSelectedCreature(creature);
+  };
 
   const initAudio = () => {
     _initAudio();
@@ -107,10 +123,12 @@ function App() {
       const clamped = Math.max(0, Math.min(1, pct || 0));
       setScrollProgress(clamped);
       setIsVoid(clamped > 0.88);
+      // Fade out surface sounds
+      updateBeachVolume(clamped);
     };
     window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
+  }, [updateBeachVolume]);
 
   const toggleCyclone = () => {
     initAudio(); // Init audio on first interaction
@@ -257,12 +275,21 @@ function App() {
         }}
       />
 
+      {/* Cinematic Viewport */}
+      <SubmarineGlass isEnabled={isSubmarineMode} />
+      <PressureDistortion depth={Math.round(scrollProgress * 11000)} />
+
       <Controls 
         isAudioEnabled={isAudioEnabled} 
         onToggleAudio={handleToggleAudio} 
+        isSubmarineMode={isSubmarineMode}
+        onToggleSubmarine={() => setIsSubmarineMode(!isSubmarineMode)}
       />
       <DepthMeter />
-      <DepthHUD scrollProgress={scrollProgress} />
+      <DepthHUD 
+        scrollProgress={scrollProgress} 
+        scannedCount={scannedSpecies.size}
+      />
 
       <div
         style={{
@@ -313,11 +340,12 @@ function App() {
 
       <main className={`relative z-10 perspective-1000 transition-opacity duration-1000 ${showIntro ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
         <SectionWrapper><HeroSection onDive={() => diveToSection('sunlight')} /></SectionWrapper>
-        <SectionWrapper><SunlightZone id="sunlight" onDive={() => diveToSection('twilight')} onOpenModal={setSelectedCreature} /></SectionWrapper>
-        <SectionWrapper><TwilightZone id="twilight" onDive={() => diveToSection('midnight')} onOpenModal={setSelectedCreature} /></SectionWrapper>
-        <SectionWrapper><MidnightZone id="midnight" onDive={() => diveToSection('abyss')} onOpenModal={setSelectedCreature} /></SectionWrapper>
-        <SectionWrapper><AbyssZone    id="abyss"    onDive={() => diveToSection('hadal')} onOpenModal={setSelectedCreature} /></SectionWrapper>
-        <SectionWrapper><HadalZone    id="hadal"    onDive={() => diveToSection('hero')}   onOpenModal={setSelectedCreature} /></SectionWrapper>
+        <SectionWrapper><SunlightZone id="sunlight" onDive={() => diveToSection('twilight')} onOpenModal={handleScan} /></SectionWrapper>
+        <SectionWrapper><TwilightZone id="twilight" onDive={() => diveToSection('shipwreck')} onOpenModal={handleScan} /></SectionWrapper>
+        <SectionWrapper><ShipwreckZone id="shipwreck" onDive={() => diveToSection('midnight')} /></SectionWrapper>
+        <SectionWrapper><MidnightZone id="midnight" onDive={() => diveToSection('abyss')} onOpenModal={handleScan} /></SectionWrapper>
+        <SectionWrapper><AbyssZone    id="abyss"    onDive={() => diveToSection('hadal')} onOpenModal={handleScan} /></SectionWrapper>
+        <SectionWrapper><HadalZone    id="hadal"    onDive={() => diveToSection('hero')}   onOpenModal={handleScan} /></SectionWrapper>
       </main>
 
       <CreatureModal
