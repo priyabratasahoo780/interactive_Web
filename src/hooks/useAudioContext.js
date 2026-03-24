@@ -21,13 +21,13 @@ export function useAudioContext() {
     const ctx = new AudioContext();
     audioCtxRef.current = ctx;
 
-    // ── MASTER VOLUME ──────────────────────────────────────────────
+    // ── MASTER VOLUME
     const masterGain = ctx.createGain();
     masterGain.gain.value = 0.6;
     masterGain.connect(ctx.destination);
     masterGainRef.current = masterGain;
 
-    // ── AMBIENT UNDERWATER DRONE (Layered oscillators) ─────────────
+    // ── AMBIENT UNDERWATER DRONE (Layered oscillators)
     // Layer 1: Sub bass with harmonics — audible on ALL speakers
     const createOscLayer = (freq, type, gainVal, detune = 0) => {
       const osc = ctx.createOscillator();

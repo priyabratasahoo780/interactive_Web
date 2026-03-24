@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { motion } from 'framer-motion';
 
 const ZONES = [
   { depth: 0,    name: 'Surface',       temp: 25,  pressure: 1 },
@@ -45,29 +46,34 @@ export default function DepthHUD({ scrollProgress, scannedCount = 0 }) {
   const signal = Math.max(0, Math.round((1 - scrollProgress * 1.1) * 100));
 
   return (
-    <div
-      className="fixed left-4 top-1/2 -translate-y-1/2 z-50 pointer-events-none"
+    <motion.div
+      initial={{ opacity: 0, x: -20 }}
+      animate={{ opacity: 0.85, x: 0 }}
+      className="fixed left-4 top-1/2 -translate-y-1/2 z-50 pointer-events-none select-none"
       style={{
         fontFamily: "'Courier New', monospace",
         fontSize: '0.7rem',
         color: scrollProgress > 0.8 ? '#ff4040' : '#00ff88',
         textShadow: scrollProgress > 0.8 ? '0 0 8px #ff4040' : '0 0 8px #00ff88',
-        opacity: 0.85,
         filter: glitch ? 'blur(1px) brightness(2)' : 'none',
-        transition: 'filter 0.05s',
+        transition: 'filter 0.05s, color 0.3s',
       }}
     >
-      <div style={{
-        background: 'rgba(0,0,0,0.55)',
-        backdropFilter: 'blur(8px)',
-        border: `1px solid ${scrollProgress > 0.8 ? 'rgba(255,64,64,0.4)' : 'rgba(0,255,136,0.25)'}`,
-        borderRadius: '6px',
-        padding: '10px 14px',
-        minWidth: '150px',
-        display: 'flex',
-        flexDirection: 'column',
-        gap: '5px',
-      }}>
+      <div 
+        className="animate-float-subtle"
+        style={{
+          background: 'rgba(0,0,0,0.65)',
+          backdropFilter: 'blur(12px)',
+          border: `1px solid ${scrollProgress > 0.8 ? 'rgba(255,64,64,0.4)' : 'rgba(0,255,136,0.25)'}`,
+          borderRadius: '8px',
+          padding: '12px 16px',
+          minWidth: '170px',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '6px',
+          boxShadow: '0 8px 32px rgba(0,0,0,0.4)',
+        }}
+      >
         {/* Title */}
         <div style={{ fontSize: '0.6rem', letterSpacing: '0.15em', opacity: 0.6, borderBottom: '1px solid #333', paddingBottom: '4px', marginBottom: '2px' }}>
           ◈ SUB-NAUTICAL HUD
@@ -122,6 +128,6 @@ export default function DepthHUD({ scrollProgress, scannedCount = 0 }) {
           </div>
         )}
       </div>
-    </div>
+    </motion.div>
   );
 }

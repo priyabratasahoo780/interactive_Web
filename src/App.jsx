@@ -52,10 +52,15 @@ function App() {
     setSelectedCreature(creature);
   };
 
-  const initAudio = () => {
+  const initAudio = (startMuted = false) => {
     _initAudio();
-    setIsAudioEnabled(true);
-    toggleMasterMute(false);
+    if (startMuted) {
+      setIsAudioEnabled(false);
+      toggleMasterMute(true);
+    } else {
+      setIsAudioEnabled(true);
+      toggleMasterMute(false);
+    }
   };
 
   const handleToggleAudio = () => {
@@ -69,7 +74,8 @@ function App() {
   };
 
   const handleStartDive = () => {
-    initAudio();
+    // Initialize context on gesture but keep muted as per request
+    initAudio(true); 
     setShowIntro(false);
     // Force a small scroll to ensure everything initializes
     if (lenisRef.current) {
@@ -95,9 +101,13 @@ function App() {
   // Lenis smooth scroll
   useEffect(() => {
     const lenis = new Lenis({
-      lerp: 0.08,
+      duration: 1.2,
+      easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+      orientation: 'vertical',
+      gestureOrientation: 'vertical',
       smoothWheel: true,
-      syncTouch: false,
+      wheelMultiplier: 1.1,
+      lerp: 0.1, // Faster responsiveness
     });
     lenisRef.current = lenis;
 
@@ -117,17 +127,28 @@ function App() {
 
   // Track scroll progress for react state (for React components like DepthHUD)
   useEffect(() => {
-    const handleScroll = () => {
+    let lastUpdate = 0;
+    const handleScroll = (e) => {
+      // Throttle state updates for non-critical UI to 60fps
+      const now = performance.now();
+      if (now - lastUpdate < 16) return;
+      lastUpdate = now;
+
       const el = document.documentElement;
       const pct = el.scrollTop / (el.scrollHeight - el.clientHeight);
-      const clamped = Math.max(0, Math.min(1, pct || 0));
+      const clamped = Math.min(1, Math.max(0, pct || 0));
+      
       setScrollProgress(clamped);
       setIsVoid(clamped > 0.88);
-      // Fade out surface sounds
       updateBeachVolume(clamped);
     };
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    return () => window.removeEventListener('scroll', handleScroll);
+
+    if (lenisRef.current) {
+      lenisRef.current.on('scroll', handleScroll);
+    }
+    return () => {
+      if (lenisRef.current) lenisRef.current.off('scroll', handleScroll);
+    };
   }, [updateBeachVolume]);
 
   const toggleCyclone = () => {
@@ -168,12 +189,15 @@ function App() {
 
   const SectionWrapper = ({ children }) => (
     <motion.div
+      initial={{ opacity: 0, y: 30 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: false, margin: "-10%" }}
+      transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1] }}
       style={{
         rotateX,
         rotateY,
         transformStyle: 'preserve-3d',
       }}
-      transition={{ type: 'spring', stiffness: 400, damping: 30 }}
       className="relative z-10"
     >
       {children}

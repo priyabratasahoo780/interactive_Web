@@ -85,3 +85,12 @@ body.day-mode .section-abyss { background: linear-gradient(180deg, #03045e 0%, #
   animation: cursor-blink 0.8s step-end infinite;
   color: #00d4ff;
 }
+
+@keyframes float-subtle {
+  0%, 100% { transform: translateY(0) rotate(0); }
+  50% { transform: translateY(-10px) rotate(0.5deg); }
+}
+
+.animate-float-subtle {
+  animation: float-subtle 4s ease-in-out infinite;
+}

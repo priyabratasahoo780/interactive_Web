@@ -38,24 +38,25 @@ function SingleFish({ offsetX, offsetY, offsetZ, speed, scale, color }) {
   return (
     <group ref={groupRef} scale={scale}>
       {/* Body */}
-      <mesh castShadow={false}>
+      <mesh frustumCulled={true}>
         <sphereGeometry args={[0.5, 8, 6]} />
         <meshPhysicalMaterial
           color={color}
-          roughness={0.3}
-          metalness={0.1}
+          roughness={0.4}
+          metalness={0.0}
           emissive={color}
-          emissiveIntensity={0.15}
+          emissiveIntensity={0.1}
+          flatShading={true}
         />
       </mesh>
       {/* Tail */}
       <mesh ref={bodyRef} position={[-0.6, 0, 0]} rotation={[0, 0, Math.PI / 2]}>
-        <coneGeometry args={[0.35, 0.6, 6]} />
-        <meshPhysicalMaterial color={color} roughness={0.4} emissive={color} emissiveIntensity={0.1} />
+        <coneGeometry args={[0.35, 0.6, 5]} />
+        <meshPhysicalMaterial color={color} roughness={0.5} emissive={color} emissiveIntensity={0.05} flatShading={true} />
       </mesh>
       {/* Eye */}
       <mesh position={[0.3, 0.12, 0.28]}>
-        <sphereGeometry args={[0.06, 5, 5]} />
+        <sphereGeometry args={[0.06, 4, 4]} />
         <meshBasicMaterial color="#ffffff" />
       </mesh>
     </group>

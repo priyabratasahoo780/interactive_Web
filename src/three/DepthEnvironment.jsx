@@ -15,26 +15,31 @@ const DEPTH_COLORS = [
   { p: 1.00, fog: new THREE.Color('#000000'), bg: new THREE.Color('#000000') },
 ];
 
-function lerpColors(stops, t) {
+const tempFogColor = new THREE.Color();
+const tempBgColor = new THREE.Color();
+
+function lerpColors(stops, t, target) {
   for (let i = 0; i < stops.length - 1; i++) {
     const a = stops[i], b = stops[i + 1];
     if (t >= a.p && t <= b.p) {
       const fac = (t - a.p) / (b.p - a.p);
-      return {
-        fog: a.fog.clone().lerp(b.fog, fac),
-        bg: a.bg.clone().lerp(b.bg, fac),
-      };
+      target.fog.copy(a.fog).lerp(b.fog, fac);
+      target.bg.copy(a.bg).lerp(b.bg, fac);
+      return;
     }
   }
-  return { fog: stops[stops.length - 1].fog.clone(), bg: stops[stops.length - 1].bg.clone() };
+  target.fog.copy(stops[stops.length - 1].fog);
+  target.bg.copy(stops[stops.length - 1].bg);
 }
 
 export default function DepthEnvironment({ scrollRef }) {
   const { scene } = useThree();
+  const colors = useRef({ fog: new THREE.Color(), bg: new THREE.Color() });
 
   useFrame(() => {
     const t = scrollRef.current;
-    const { fog, bg } = lerpColors(DEPTH_COLORS, t);
+    lerpColors(DEPTH_COLORS, t, colors.current);
+    const { fog, bg } = colors.current;
 
     // Fog density increases with depth
     const density = 0.03 + t * 0.12;
