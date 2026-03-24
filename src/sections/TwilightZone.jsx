@@ -15,7 +15,7 @@ const itemVariants = {
   visible: { opacity: 1, y: 0, transition: { duration: 0.8, ease: "easeOut" } }
 };
 
-export default function TwilightZone({ onOpenModal }) {
+export default function TwilightZone({ onOpenModal, onDive }) {
   return (
     <section 
       id="twilight" 
@@ -97,6 +97,17 @@ export default function TwilightZone({ onOpenModal }) {
             </motion.div>
           ))}
         </div>
+
+        <motion.div variants={itemVariants} className="flex justify-center mt-12 pb-12">
+          <button 
+            onClick={onDive}
+            className="group relative flex items-center gap-3 px-10 py-4 bg-transparent border border-[#9b5de5]/40 rounded-full text-[#9b5de5] font-head text-[1rem] font-bold tracking-widest hover:bg-[#9b5de5]/10 hover:border-[#9b5de5] hover:-translate-y-1 transition-all duration-300 shadow-[0_0_20px_rgba(155,93,229,0.1)]"
+          >
+            <span className="relative z-10">Dive into Darkness</span>
+            <span className="relative z-10 animate-bounce">↓</span>
+            <div className="absolute inset-0 bg-[#9b5de5]/5 rounded-full blur-xl opacity-0 group-hover:opacity-100 transition-opacity" />
+          </button>
+        </motion.div>
       </motion.div>
 
       <style>{`

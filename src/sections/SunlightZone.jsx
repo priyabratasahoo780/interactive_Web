@@ -15,7 +15,7 @@ const itemVariants = {
   visible: { opacity: 1, y: 0, transition: { duration: 0.8, ease: "easeOut" } }
 };
 
-export default function SunlightZone({ onOpenModal }) {
+export default function SunlightZone({ onOpenModal, onDive }) {
   return (
     <section 
       id="sunlight" 
@@ -107,6 +107,17 @@ export default function SunlightZone({ onOpenModal }) {
             </motion.div>
           ))}
         </div>
+
+        <motion.div variants={itemVariants} className="flex justify-center mt-12 pb-12">
+          <button 
+            onClick={onDive}
+            className="group relative flex items-center gap-3 px-10 py-4 bg-transparent border border-[#00d4ff]/40 rounded-full text-[#00d4ff] font-head text-[1rem] font-bold tracking-widest hover:bg-[#00d4ff]/10 hover:border-[#00d4ff] hover:-translate-y-1 transition-all duration-300"
+          >
+            <span className="relative z-10">Dive Deeper</span>
+            <span className="relative z-10 animate-bounce">↓</span>
+            <div className="absolute inset-0 bg-[#00d4ff]/5 rounded-full blur-xl opacity-0 group-hover:opacity-100 transition-opacity" />
+          </button>
+        </motion.div>
       </motion.div>
 
       <style>{`

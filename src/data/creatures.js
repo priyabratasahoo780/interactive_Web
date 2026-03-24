@@ -1,7 +1,3 @@
-// ============================================================
-// creatures.js — Ocean creature data for all depth zones
-// ============================================================
-
 const OCEAN_CREATURES = {
   sunlight: [
     {

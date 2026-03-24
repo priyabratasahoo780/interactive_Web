@@ -41,7 +41,7 @@ function AnimatedCounter({ from, to }) {
   return <span ref={nodeRef}>{from}</span>;
 }
 
-export default function MidnightZone({ onOpenModal }) {
+export default function MidnightZone({ onOpenModal, onDive }) {
   return (
     <section 
       id="midnight" 
@@ -118,6 +118,16 @@ export default function MidnightZone({ onOpenModal }) {
           </p>
         </motion.div>
 
+        <motion.div variants={itemVariants} className="flex justify-center mt-12 pb-12">
+          <button 
+            onClick={onDive}
+            className="group relative flex items-center gap-3 px-10 py-4 bg-transparent border border-[#ef233c]/40 rounded-full text-[#ff6b8a] font-head text-[1rem] font-bold tracking-widest hover:bg-[#ef233c]/10 hover:border-[#ef233c] hover:-translate-y-1 transition-all duration-300 shadow-[0_0_20px_rgba(239,35,60,0.1)]"
+          >
+            <span className="relative z-10">Dive into the Abyss</span>
+            <span className="relative z-10 animate-bounce">↓</span>
+            <div className="absolute inset-0 bg-[#ef233c]/5 rounded-full blur-xl opacity-0 group-hover:opacity-100 transition-opacity" />
+          </button>
+        </motion.div>
       </motion.div>
 
       <style>{`

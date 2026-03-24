@@ -16,7 +16,7 @@ const itemVariants = {
 };
 
 
-export default function AbyssZone({ onOpenModal }) {
+export default function AbyssZone({ onOpenModal, onDive }) {
   return (
     <section 
       id="abyss" 
@@ -83,7 +83,16 @@ export default function AbyssZone({ onOpenModal }) {
           ))}
         </motion.div>
 
-
+        <motion.div variants={itemVariants} className="flex justify-center mt-12 pb-12">
+          <button 
+            onClick={onDive}
+            className="group relative flex items-center gap-3 px-10 py-4 bg-transparent border border-white/20 rounded-full text-white/70 font-head text-[1rem] font-bold tracking-widest hover:bg-white/5 hover:border-white/40 hover:-translate-y-1 transition-all duration-300 shadow-[0_0_20px_rgba(255,255,255,0.05)]"
+          >
+            <span className="relative z-10">Reach the Trench</span>
+            <span className="relative z-10 animate-bounce">↓</span>
+            <div className="absolute inset-0 bg-white/5 rounded-full blur-xl opacity-0 group-hover:opacity-100 transition-opacity" />
+          </button>
+        </motion.div>
       </motion.div>
 
       <style>{`

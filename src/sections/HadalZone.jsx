@@ -58,7 +58,7 @@ function TypewriterQuote() {
   );
 }
 
-export default function HadalZone({ onOpenModal }) {
+export default function HadalZone({ onOpenModal, onDive }) {
   const scrollToTop = () => {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
@@ -120,10 +120,9 @@ export default function HadalZone({ onOpenModal }) {
           <TypewriterQuote />
         </motion.div>
 
-        {/* Final Ascend Button */}
         <motion.div variants={itemVariants} className="text-center mt-20 mb-12">
           <button 
-            onClick={scrollToTop}
+            onClick={onDive}
             className="group inline-flex items-center gap-4 px-12 py-5 bg-white/5 border-2 border-white/20 hover:border-white/60 hover:bg-white/10 rounded-full text-white/60 hover:text-white font-head text-[1.1rem] font-bold tracking-widest transition-all duration-500 hover:-translate-y-2 hover:shadow-[0_20px_60px_rgba(255,255,255,0.1)]"
           >
             <span className="text-[1.5rem] transition-transform duration-500 group-hover:-translate-y-2">↑</span>

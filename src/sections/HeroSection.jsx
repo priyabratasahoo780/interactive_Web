@@ -1,6 +1,6 @@
 import { motion } from 'framer-motion';
 
-export default function HeroSection() {
+export default function HeroSection({ onDive }) {
   return (
     <section 
       id="hero" 
@@ -68,8 +68,8 @@ export default function HeroSection() {
           a world stranger than fiction, and mostly unexplored.
         </motion.p>
 
-        <motion.a 
-          href="#sunlight"
+        <motion.button 
+          onClick={onDive}
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.35, ease: "easeOut" }}
@@ -79,7 +79,7 @@ export default function HeroSection() {
           <div className="absolute inset-0 bg-white/15 origin-left scale-x-0 group-hover:scale-x-100 transition-transform duration-300" />
           <span className="relative z-10">Start the Journey</span>
           <span className="relative z-10 text-[1.3rem] animate-[bounce-arrow_1.5s_ease-in-out_infinite]">↓</span>
-        </motion.a>
+        </motion.button>
 
         <motion.div 
           initial={{ opacity: 0 }}

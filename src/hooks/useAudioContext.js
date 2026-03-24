@@ -216,5 +216,23 @@ export function useAudioContext() {
     }
   }, []);
 
-  return { initAudio, triggerCycloneAudio, stopCycloneAudio, triggerLightningSound };
+  const toggleMasterMute = useCallback((isMuted) => {
+    if (!masterGainRef.current || !audioCtxRef.current) return;
+    const ctx = audioCtxRef.current;
+    const now = ctx.currentTime;
+    const gain = masterGainRef.current.gain;
+    
+    gain.cancelScheduledValues(now);
+    gain.setValueAtTime(gain.value, now);
+    gain.linearRampToValueAtTime(isMuted ? 0 : 0.6, now + 0.1);
+  }, []);
+
+  return { 
+    isInitialized: !!audioCtxRef.current,
+    initAudio, 
+    toggleMasterMute, 
+    triggerCycloneAudio, 
+    stopCycloneAudio, 
+    triggerLightningSound 
+  };
 }

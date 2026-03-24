@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import OceanCanvas from './three/OceanCanvas';
 import DepthMeter from './components/DepthMeter';
 import Controls from './components/Controls';
@@ -10,25 +10,66 @@ import AbyssZone from './sections/AbyssZone';
 import HadalZone from './sections/HadalZone';
 import { CreatureModal } from './components/CreatureCard';
 import DepthHUD from './components/DepthHUD';
+import IntroScreen from './components/IntroScreen';
 import { useScrollDepth, useMouseParallax } from './hooks/useScrollDepth';
 import { useAudioContext } from './hooks/useAudioContext';
 import Lenis from '@studio-freight/lenis';
-import { motion, useSpring, useTransform } from 'framer-motion';
+import { motion, useSpring, useTransform, AnimatePresence } from 'framer-motion';
 
 function App() {
   const [selectedCreature, setSelectedCreature] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [showIntro, setShowIntro] = useState(true);
   const [isCycloneActive, setIsCycloneActive] = useState(false);
   const [scrollProgress, setScrollProgress] = useState(0);
   const [isVoid, setIsVoid] = useState(false);
   const [isAudioEnabled, setIsAudioEnabled] = useState(false);
   const [lightningFlash, setLightningFlash] = useState(false);
   
-  const { initAudio: _initAudio, triggerCycloneAudio, stopCycloneAudio, triggerLightningSound } = useAudioContext();
+  const lenisRef = useRef(null);
+  const { 
+    isInitialized,
+    initAudio: _initAudio, 
+    toggleMasterMute, 
+    triggerCycloneAudio, 
+    stopCycloneAudio, 
+    triggerLightningSound 
+  } = useAudioContext();
 
   const initAudio = () => {
     _initAudio();
     setIsAudioEnabled(true);
+    toggleMasterMute(false);
+  };
+
+  const handleToggleAudio = () => {
+    if (!isInitialized) {
+      initAudio();
+    } else {
+      const targetState = !isAudioEnabled;
+      setIsAudioEnabled(targetState);
+      toggleMasterMute(!targetState);
+    }
+  };
+
+  const handleStartDive = () => {
+    initAudio();
+    setShowIntro(false);
+    // Force a small scroll to ensure everything initializes
+    if (lenisRef.current) {
+      setTimeout(() => {
+        lenisRef.current.scrollTo(0, { duration: 2, easing: (t) => t });
+      }, 100);
+    }
+  };
+
+  const diveToSection = (id) => {
+    if (lenisRef.current) {
+      lenisRef.current.scrollTo(`#${id}`, { 
+        duration: 2.5, 
+        easing: (t) => t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2 
+      });
+    }
   };
 
   // Shared refs for the 3D canvas (no re-renders)
@@ -42,6 +83,7 @@ function App() {
       smoothWheel: true,
       syncTouch: false,
     });
+    lenisRef.current = lenis;
 
     let raf;
     function loop(time) {
@@ -53,7 +95,7 @@ function App() {
   }, []);
 
   useEffect(() => {
-    const timer = setTimeout(() => setLoading(false), 2500);
+    const timer = setTimeout(() => setLoading(false), 2000);
     return () => clearTimeout(timer);
   }, []);
 
@@ -122,22 +164,38 @@ function App() {
 
   return (
     <>
-      {/* Loading Screen Overlay */}
-      <div
-        className={`fixed inset-0 z-[9999] flex flex-col items-center justify-center gap-6 bg-[radial-gradient(ellipse_at_center,#023e8a_0%,#000020_100%)] transition-all duration-700 ease-in-out ${loading ? 'opacity-100 visible' : 'opacity-0 invisible pointer-events-none'}`}
-      >
-        <div className="relative w-20 h-20">
-          <span className="absolute inset-0 rounded-full border-[3px] border-[#00d4ff] animate-[ripple-out_2s_cubic-bezier(0.16,1,0.3,1)_infinite]" />
-          <span className="absolute inset-0 rounded-full border-[3px] border-[#00d4ff] animate-[ripple-out_2s_cubic-bezier(0.16,1,0.3,1)_infinite] opacity-70 [animation-delay:0.5s]" />
-          <span className="absolute inset-0 rounded-full border-[3px] border-[#00d4ff] animate-[ripple-out_2s_cubic-bezier(0.16,1,0.3,1)_infinite] opacity-40 [animation-delay:1s]" />
-        </div>
-        <p className="font-head text-[1.1rem] font-light text-[#00d4ff] tracking-[0.15em]">
-          Preparing your dive<span className="animate-[blink-dots_1.2s_steps(4)_infinite]">...</span>
-        </p>
-        <div className="w-[250px] h-[3px] bg-white/15 rounded-full overflow-hidden">
-          <div className="h-full bg-gradient-to-r from-[#00d4ff] to-[#9b5de5] rounded-full animate-[load-fill_2.5s_cubic-bezier(0.16,1,0.3,1)_forwards]" />
-        </div>
-      </div>
+      <AnimatePresence>
+        {loading && (
+          <motion.div
+            key="loader"
+            exit={{ opacity: 0, scale: 1.1 }}
+            transition={{ duration: 0.8 }}
+            className="fixed inset-0 z-[99999] flex flex-col items-center justify-center gap-6 bg-[#000005]"
+          >
+            <div className="relative w-20 h-20">
+              <span className="absolute inset-0 rounded-full border-[3px] border-[#00d4ff] animate-[ripple-out_2s_cubic-bezier(0.16,1,0.3,1)_infinite]" />
+              <span className="absolute inset-0 rounded-full border-[3px] border-[#00d4ff] animate-[ripple-out_2s_cubic-bezier(0.16,1,0.3,1)_infinite] opacity-70 [animation-delay:0.5s]" />
+            </div>
+            <p className="font-head text-[1.1rem] font-light text-[#00d4ff] tracking-[0.15em]">
+              LOADING INTERFACE<span className="animate-[blink-dots_1.2s_steps(4)_infinite]">...</span>
+            </p>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {showIntro && !loading && (
+          <motion.div
+            key="intro"
+            initial={{ opacity: 1 }}
+            exit={{ opacity: 0, scale: 1.05 }}
+            transition={{ duration: 1.2, ease: "easeInOut" }}
+            className="fixed inset-0 z-[9999]"
+          >
+            <IntroScreen onStart={handleStartDive} />
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       <style>{`
         @keyframes ripple-out {
@@ -148,10 +206,6 @@ function App() {
           0%, 100% { opacity: 0; }
           33% { opacity: 1; }
         }
-        @keyframes load-fill {
-          0% { width: 0%; }
-          100% { width: 100%; }
-        }
         @keyframes glitch-text {
           0%   { clip-path: inset(30% 0 60% 0); transform: translate(-50%,-50%) translateX(-3px); }
           20%  { clip-path: inset(80% 0 10% 0); transform: translate(-50%,-50%) translateX(3px); }
@@ -160,13 +214,8 @@ function App() {
           80%  { clip-path: inset(60% 0 20% 0); transform: translate(-50%,-50%) translateX(-1px); }
           100% { clip-path: inset(30% 0 60% 0); transform: translate(-50%,-50%) translateX(1px); }
         }
-        @keyframes pulse {
-          0%, 100% { opacity: 0.4; }
-          50% { opacity: 1; }
-        }
       `}</style>
 
-      {/* Three.js WebGL Background Canvas */}
       <OceanCanvas 
         scrollRef={scrollRef} 
         mouseRef={mouseRef} 
@@ -174,7 +223,6 @@ function App() {
         triggerLightningSound={handleLightningStrike}
       />
 
-      {/* Lightning HTML screen flash */}
       {lightningFlash && (
         <div style={{
           position: 'fixed', inset: 0, zIndex: 98,
@@ -183,7 +231,6 @@ function App() {
         }} />
       )}
 
-      {/* Water Distortion Overlay */}
       <div
         style={{
           position: 'fixed',
@@ -196,7 +243,6 @@ function App() {
         }}
       />
 
-      {/* Pressure Compression Effect (screen scales slightly) */}
       <div
         style={{
           position: 'fixed',
@@ -207,7 +253,13 @@ function App() {
         }}
       />
 
-      {/* VOID / Signal Lost overlay at deepest depth */}
+      <Controls 
+        isAudioEnabled={isAudioEnabled} 
+        onToggleAudio={handleToggleAudio} 
+      />
+      <DepthMeter />
+      <DepthHUD scrollProgress={scrollProgress} />
+
       <div
         style={{
           position: 'fixed',
@@ -238,7 +290,6 @@ function App() {
         )}
       </div>
 
-      {/* Cyclone Global Toggle */}
       <div className="fixed bottom-6 right-6 z-[100]">
         <button
           onClick={toggleCyclone}
@@ -248,9 +299,7 @@ function App() {
               : 'bg-black/40 text-[#00d4ff] backdrop-blur-md border border-[#00d4ff]/40 hover:bg-[#00d4ff]/10 hover:border-[#00d4ff]'
           }`}
         >
-          {isCycloneActive && (
-            <span className="absolute inset-0 bg-white/20 animate-pulse" />
-          )}
+          {isCycloneActive && <span className="absolute inset-0 bg-white/20 animate-pulse" />}
           <span className="relative z-10 flex items-center gap-2">
             <span className={isCycloneActive ? 'animate-spin inline-block' : ''}>🌀</span>
             {isCycloneActive ? 'STOP CYCLONE' : 'ACTIVATE CYCLONE'}
@@ -258,45 +307,15 @@ function App() {
         </button>
       </div>
 
-      <Controls />
-      <DepthMeter />
-      <DepthHUD scrollProgress={scrollProgress} />
-
-      {/* Audio Enable Button — always visible on surface */}
-      <button
-        onClick={initAudio}
-        style={{
-          position: 'fixed',
-          top: 14,
-          left: '50%',
-          transform: 'translateX(-50%)',
-          zIndex: 200,
-          background: isAudioEnabled ? 'rgba(0,180,80,0.3)' : 'rgba(0,0,0,0.55)',
-          backdropFilter: 'blur(8px)',
-          border: `1px solid ${isAudioEnabled ? 'rgba(0,255,136,0.5)' : 'rgba(0,212,255,0.3)'}`,
-          color: isAudioEnabled ? '#00ff88' : '#00d4ff',
-          padding: '5px 16px',
-          borderRadius: '999px',
-          fontSize: '0.65rem',
-          letterSpacing: '0.15em',
-          cursor: 'pointer',
-          fontFamily: 'inherit',
-          transition: 'all 0.4s',
-        }}
-      >
-        {isAudioEnabled ? '🔊 AUDIO ON' : '🔇 ENABLE AUDIO'}
-      </button>
-
-      <main className="relative z-10 perspective-1000">
-        <SectionWrapper><HeroSection /></SectionWrapper>
-        <SectionWrapper><SunlightZone onOpenModal={setSelectedCreature} /></SectionWrapper>
-        <SectionWrapper><TwilightZone onOpenModal={setSelectedCreature} /></SectionWrapper>
-        <SectionWrapper><MidnightZone onOpenModal={setSelectedCreature} /></SectionWrapper>
-        <SectionWrapper><AbyssZone onOpenModal={setSelectedCreature} /></SectionWrapper>
-        <SectionWrapper><HadalZone onOpenModal={setSelectedCreature} /></SectionWrapper>
+      <main className={`relative z-10 perspective-1000 transition-opacity duration-1000 ${showIntro ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
+        <SectionWrapper><HeroSection onDive={() => diveToSection('sunlight')} /></SectionWrapper>
+        <SectionWrapper><SunlightZone id="sunlight" onDive={() => diveToSection('twilight')} onOpenModal={setSelectedCreature} /></SectionWrapper>
+        <SectionWrapper><TwilightZone id="twilight" onDive={() => diveToSection('midnight')} onOpenModal={setSelectedCreature} /></SectionWrapper>
+        <SectionWrapper><MidnightZone id="midnight" onDive={() => diveToSection('abyss')} onOpenModal={setSelectedCreature} /></SectionWrapper>
+        <SectionWrapper><AbyssZone    id="abyss"    onDive={() => diveToSection('hadal')} onOpenModal={setSelectedCreature} /></SectionWrapper>
+        <SectionWrapper><HadalZone    id="hadal"    onDive={() => diveToSection('hero')}   onOpenModal={setSelectedCreature} /></SectionWrapper>
       </main>
 
-      {/* Global Creature Modal */}
       <CreatureModal
         creature={selectedCreature}
         onClose={() => setSelectedCreature(null)}
