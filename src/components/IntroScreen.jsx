@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
-export default function IntroScreen({ onStart }) {
+export default function IntroScreen({ onStart, isAudioEnabled, onToggleAudio }) {
   const [textIndex, setTextIndex] = useState(0);
   const [isReady, setIsReady] = useState(false);
   
@@ -88,20 +88,33 @@ export default function IntroScreen({ onStart }) {
         </div>
 
         {isReady && (
-          <motion.button
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            whileHover={{ scale: 1.05, boxShadow: '0 0 30px rgba(0,212,255,0.4)' }}
-            whileTap={{ scale: 0.95 }}
-            onClick={onStart}
-            className="group relative px-12 py-5 bg-transparent border border-[#00d4ff]/50 rounded-full overflow-hidden transition-all duration-500"
-          >
-            <div className="absolute inset-0 bg-[#00d4ff]/10 group-hover:bg-[#00d4ff]/20 transition-colors" />
-            <span className="relative z-10 font-head text-[#00d4ff] text-[1.2rem] font-bold tracking-[0.2em] uppercase">
-              Click to Start Dive
-            </span>
-            <div className="absolute -inset-1 bg-gradient-to-r from-transparent via-[#00d4ff]/30 to-transparent skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
-          </motion.button>
+          <div className="flex flex-col items-center gap-6">
+            <motion.button
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              whileHover={{ scale: 1.05, boxShadow: '0 0 30px rgba(0,212,255,0.4)' }}
+              whileTap={{ scale: 0.95 }}
+              onClick={onStart}
+              className="group relative px-12 py-5 bg-transparent border border-[#00d4ff]/50 rounded-full overflow-hidden transition-all duration-500"
+            >
+              <div className="absolute inset-0 bg-[#00d4ff]/10 group-hover:bg-[#00d4ff]/20 transition-colors" />
+              <span className="relative z-10 font-head text-[#00d4ff] text-[1.2rem] font-bold tracking-[0.2em] uppercase">
+                Click to Start Dive
+              </span>
+              <div className="absolute -inset-1 bg-gradient-to-r from-transparent via-[#00d4ff]/30 to-transparent skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
+            </motion.button>
+
+            {/* Continuous Vibrant Sound Toggle */}
+            <motion.button
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 0.7 }}
+              whileHover={{ opacity: 1 }}
+              onClick={onToggleAudio}
+              className="flex items-center gap-2 text-[#00d4ff] font-head text-[0.7rem] tracking-[0.2em] uppercase hover:underline underline-offset-4"
+            >
+              {isAudioEnabled ? '🔊 SOUND ON' : '🔇 SOUND MUTED'}
+            </motion.button>
+          </div>
         )}
       </div>
 

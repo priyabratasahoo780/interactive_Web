@@ -28,10 +28,11 @@ export function useAudioContext() {
 
     // ── AMBIENT UNDERWATER DRONE (Layered oscillators) ─────────────
     // Layer 1: Sub bass with harmonics — audible on ALL speakers
-    const createOscLayer = (freq, type, gainVal) => {
+    const createOscLayer = (freq, type, gainVal, detune = 0) => {
       const osc = ctx.createOscillator();
       osc.type = type;
       osc.frequency.value = freq;
+      osc.detune.value = detune;
 
       const gain = ctx.createGain();
       gain.gain.value = gainVal;
@@ -44,27 +45,39 @@ export function useAudioContext() {
       gain.connect(lpf);
       lpf.connect(masterGain);
       osc.start();
-      return { osc, gain };
+      return { osc, gain, lpf };
     };
 
     const droneGroup = {
       layers: [
-        createOscLayer(80,  'sine',     0.5), // Root bass — audible on speakers
-        createOscLayer(120, 'sine',     0.3), // 3rd harmonic
-        createOscLayer(160, 'triangle', 0.2), // 5th harmonic — adds warmth
-        createOscLayer(240, 'sine',     0.1), // High harmonic — presence
+        createOscLayer(80,  'sine',     0.5),      // Root bass
+        createOscLayer(120, 'sine',     0.3, 5),   // 3rd harmonic + detune
+        createOscLayer(160, 'triangle', 0.2, -5),  // 5th harmonic + detune
+        createOscLayer(40,  'sine',     0.4),      // Sub rumble
+        createOscLayer(320, 'sine',     0.05, 10), // Shimmer
       ],
     };
 
-    // Add slow LFO wobble to main drone for "breathing" effect
+    // Add slow LFO wobble to main drone
     const lfo = ctx.createOscillator();
     lfo.type = 'sine';
-    lfo.frequency.value = 0.12; // Very slow wobble
+    lfo.frequency.value = 0.12; 
     const lfoGain = ctx.createGain();
     lfoGain.gain.value = 0.15;
     lfo.connect(lfoGain);
     lfoGain.connect(droneGroup.layers[0].gain.gain);
     lfo.start();
+
+    // Vibrant spectral filter sweep for the shimmer layer
+    const shimmerFilter = droneGroup.layers[4].lpf;
+    const filterLfo = ctx.createOscillator();
+    filterLfo.type = 'sine';
+    filterLfo.frequency.value = 0.05;
+    const filterLfoGain = ctx.createGain();
+    filterLfoGain.gain.value = 400;
+    filterLfo.connect(filterLfoGain);
+    filterLfoGain.connect(shimmerFilter.frequency);
+    filterLfo.start();
 
     droneGainRef.current = droneGroup;
 

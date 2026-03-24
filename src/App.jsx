@@ -192,7 +192,11 @@ function App() {
             transition={{ duration: 1.2, ease: "easeInOut" }}
             className="fixed inset-0 z-[9999]"
           >
-            <IntroScreen onStart={handleStartDive} />
+            <IntroScreen 
+              onStart={handleStartDive} 
+              isAudioEnabled={isAudioEnabled} 
+              onToggleAudio={handleToggleAudio} 
+            />
           </motion.div>
         )}
       </AnimatePresence>
