@@ -12,8 +12,21 @@ const containerVariants = {
 };
 
 const itemVariants = {
-  hidden: { opacity: 0, y: 40 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.8, ease: "easeOut" } }
+  hidden: { opacity: 0, y: 30 },
+  visible: { 
+    opacity: 1, 
+    y: 0, 
+    transition: { duration: 1.2, ease: [0.22, 1, 0.36, 1] } 
+  }
+};
+
+const floatingAnimation = {
+  y: [0, -5, 0],
+  transition: {
+    duration: 8,
+    repeat: Infinity,
+    ease: "easeInOut"
+  }
 };
 
 const FINAL_TEXT = "The ocean covers 71% of our planet, yet more than 80% of it remains unexplored and unseen by human eyes. Below us lies a universe of mystery — waiting, breathing, alive in ways we've yet to imagine.";
@@ -58,7 +71,8 @@ function TypewriterQuote() {
   );
 }
 
-export default function HadalZone({ onOpenModal, onDive }) {
+export default function HadalZone({ onOpenModal, onDive, expStep, activeElementId }) {
+  const isActive = expStep && expStep.id === 'hadal';
   const scrollToTop = () => {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
@@ -66,7 +80,7 @@ export default function HadalZone({ onOpenModal, onDive }) {
   return (
     <section 
       id="hadal" 
-      className="relative min-h-screen z-[1] flex items-start px-4 md:px-6 pt-16 md:pt-32 pb-40 pl-[4.5rem] md:pl-28 overflow-hidden bg-[linear-gradient(to_bottom,rgba(0,0,5,0.1),rgba(0,0,0,0.2))]"
+      className={`relative min-h-screen z-[1] flex items-start px-4 md:px-6 pt-16 md:pt-32 pb-40 pl-[4.5rem] md:pl-28 overflow-hidden bg-[linear-gradient(to_bottom,rgba(0,0,5,0.1),rgba(0,0,0,0.2))] ${isActive ? 'experience-highlight' : ''}`}
     >
       {/* Hadal Depth Effects */}
       <div className="absolute inset-0 pointer-events-none">
@@ -111,7 +125,11 @@ export default function HadalZone({ onOpenModal, onDive }) {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 mb-24">
           {OCEAN_CREATURES.hadal.map((creature) => (
             <motion.div key={creature.id} variants={itemVariants}>
-              <CreatureCard creature={creature} onClick={onOpenModal} />
+              <CreatureCard 
+                creature={creature} 
+                onClick={onOpenModal} 
+                isHighlighted={activeElementId === creature.id.toLowerCase()} 
+              />
             </motion.div>
           ))}
         </div>
@@ -133,20 +151,26 @@ export default function HadalZone({ onOpenModal, onDive }) {
           </p>
         </motion.div>
 
-        {/* Footer Info */}
         <motion.div variants={itemVariants} className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-24 pt-12 border-t border-white/5">
-          <div className="p-8 bg-white/[0.02] border border-white/5 rounded-2xl">
+          <motion.div 
+            animate={floatingAnimation}
+            className="p-8 bg-white/[0.02] border border-white/5 rounded-2xl hover:bg-white/[0.05] hover:border-white/20 transition-all duration-500 cursor-default"
+          >
             <h4 className="font-head text-white/60 font-bold mb-3 uppercase tracking-widest text-sm">Pressure Extremes</h4>
             <p className="text-white/30 text-sm leading-relaxed">
               At 11,000 meters, the water pressure is over 15,000 psi. This is equivalent to an elephant standing on your thumb.
             </p>
-          </div>
-          <div className="p-8 bg-white/[0.02] border border-white/5 rounded-2xl">
+          </motion.div>
+          <motion.div 
+            animate={floatingAnimation}
+            transition={{ ...floatingAnimation.transition, delay: 0.5 }}
+            className="p-8 bg-white/[0.02] border border-white/5 rounded-2xl hover:bg-white/[0.05] hover:border-white/20 transition-all duration-500 cursor-default"
+          >
             <h4 className="font-head text-white/60 font-bold mb-3 uppercase tracking-widest text-sm">Biological Resilience</h4>
             <p className="text-white/30 text-sm leading-relaxed">
               Creatures here have evolved transparent bodies, flexible bones, and specialized proteins to prevent their cells from being crushed.
             </p>
-          </div>
+          </motion.div>
         </motion.div>
 
       </motion.div>

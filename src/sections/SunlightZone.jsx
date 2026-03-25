@@ -11,15 +11,30 @@ const containerVariants = {
 };
 
 const itemVariants = {
-  hidden: { opacity: 0, y: 50 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.8, ease: "easeOut" } }
+  hidden: { opacity: 0, y: 30 },
+  visible: { 
+    opacity: 1, 
+    y: 0, 
+    transition: { duration: 1, ease: [0.22, 1, 0.36, 1] } 
+  }
 };
 
-export default function SunlightZone({ onOpenModal, onDive }) {
+const floatingAnimation = {
+  y: [0, -12, 0],
+  transition: {
+    duration: 4,
+    repeat: Infinity,
+    ease: "easeInOut"
+  }
+};
+
+export default function SunlightZone({ onOpenModal, onDive, expStep, activeElementId }) {
+  const isActive = expStep && expStep.id === 'sunlight';
+
   return (
     <section 
       id="sunlight" 
-      className="relative min-h-screen z-[1] flex items-start px-4 md:px-6 pt-16 md:pt-32 pb-16 md:pb-32 pl-[4.5rem] md:pl-28 section-sunlight overflow-hidden bg-[linear-gradient(to_bottom,rgba(0,150,199,0.18),rgba(0,119,182,0.22),rgba(2,62,138,0.28))]"
+      className={`relative min-h-screen z-[1] flex items-start px-4 md:px-6 pt-16 md:pt-32 pb-16 md:pb-32 pl-[4.5rem] md:pl-28 section-sunlight overflow-hidden bg-[linear-gradient(to_bottom,rgba(0,150,199,0.18),rgba(0,119,182,0.22),rgba(2,62,138,0.28))] ${isActive ? 'experience-highlight' : ''}`}
     >
       {/* Sun Rays */}
       <div className="absolute -top-[10%] left-0 right-0 h-[60%] pointer-events-none overflow-hidden">
@@ -65,15 +80,20 @@ export default function SunlightZone({ onOpenModal, onDive }) {
 
         <motion.div variants={itemVariants} className="flex flex-wrap justify-center gap-3 mb-8">
           {[
-            { icon: '🌡️', text: '20–30°C avg temperature' },
-            { icon: '☀️', text: 'Photosynthesis zone' },
-            { icon: '🌊', text: '90% of marine life' },
-            { icon: '📡', text: 'Fully explored zone' }
+            { icon: '🌡️', text: '20–30°C avg temperature', delay: 0 },
+            { icon: '☀️', text: 'Photosynthesis zone', delay: 0.2 },
+            { icon: '🌊', text: '90% of marine life', delay: 0.4 },
+            { icon: '📡', text: 'Fully explored zone', delay: 0.6 }
           ].map((fact, i) => (
-            <div key={i} className="flex items-center gap-2 px-4 py-2 bg-white/10 border border-white/20 rounded-full text-[0.85rem] text-white/85 backdrop-blur-md hover:bg-white/20 hover:-translate-y-0.5 transition-all">
+            <motion.div 
+              key={i} 
+              animate={floatingAnimation}
+              transition={{ ...floatingAnimation.transition, delay: fact.delay }}
+              className="flex items-center gap-2 px-4 py-2 bg-white/10 border border-white/20 rounded-full text-[0.85rem] text-white/85 backdrop-blur-md hover:bg-white/20 hover:-translate-y-1 hover:border-[#00d4ff]/50 hover:shadow-[0_0_20px_rgba(0,212,255,0.2)] transition-all duration-300 cursor-default"
+            >
               <span>{fact.icon}</span>
               <span>{fact.text}</span>
-            </div>
+            </motion.div>
           ))}
         </motion.div>
 
@@ -103,7 +123,11 @@ export default function SunlightZone({ onOpenModal, onDive }) {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 mb-12">
           {OCEAN_CREATURES.sunlight.map((creature, i) => (
             <motion.div key={creature.id} variants={itemVariants}>
-              <CreatureCard creature={creature} onClick={onOpenModal} />
+              <CreatureCard 
+                creature={creature} 
+                onClick={onOpenModal} 
+                isHighlighted={activeElementId === creature.id.toLowerCase()} 
+              />
             </motion.div>
           ))}
         </div>

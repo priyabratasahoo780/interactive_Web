@@ -11,15 +11,30 @@ const containerVariants = {
 };
 
 const itemVariants = {
-  hidden: { opacity: 0, y: 40 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.8, ease: "easeOut" } }
+  hidden: { opacity: 0, y: 30 },
+  visible: { 
+    opacity: 1, 
+    y: 0, 
+    transition: { duration: 1, ease: [0.22, 1, 0.36, 1] } 
+  }
 };
 
-export default function TwilightZone({ onOpenModal, onDive }) {
+const floatingAnimation = {
+  y: [0, -10, 0],
+  transition: {
+    duration: 5,
+    repeat: Infinity,
+    ease: "easeInOut"
+  }
+};
+
+export default function TwilightZone({ onOpenModal, onDive, expStep, activeElementId }) {
+  const isActive = expStep && expStep.id === 'twilight';
+
   return (
     <section 
       id="twilight" 
-      className="relative min-h-screen z-[1] flex items-start px-4 md:px-6 pt-16 md:pt-32 pb-16 md:pb-32 pl-[4.5rem] md:pl-28 overflow-hidden bg-[linear-gradient(to_bottom,rgba(2,62,138,0.2),rgba(3,4,94,0.25))]"
+      className={`relative min-h-screen z-[1] flex items-start px-4 md:px-6 pt-16 md:pt-32 pb-16 md:pb-32 pl-[4.5rem] md:pl-28 overflow-hidden bg-[linear-gradient(to_bottom,rgba(2,62,138,0.2),rgba(3,4,94,0.25))] ${isActive ? 'experience-highlight' : ''}`}
     >
       {/* Fading light overlay */}
       <div className="absolute top-0 left-0 right-0 h-[200px] bg-gradient-to-b from-[#023e8a]/80 to-transparent pointer-events-none" />
@@ -46,15 +61,20 @@ export default function TwilightZone({ onOpenModal, onDive }) {
 
         <motion.div variants={itemVariants} className="flex flex-wrap justify-center gap-3 mb-8">
           {[
-            { icon: '🌡️', text: '5–10°C' },
-            { icon: '💡', text: 'Bioluminescence begins' },
-            { icon: '⚡', text: '50x surface pressure' },
-            { icon: '👁️', text: 'Large eyes evolved' }
+            { icon: '🌡️', text: '5–10°C', delay: 0 },
+            { icon: '💡', text: 'Bioluminescence begins', delay: 0.3 },
+            { icon: '⚡', text: '50x surface pressure', delay: 0.6 },
+            { icon: '👁️', text: 'Large eyes evolved', delay: 0.9 }
           ].map((fact, i) => (
-            <div key={i} className="flex items-center gap-2 px-4 py-2 bg-[#9b5de5]/10 border border-[#9b5de5]/40 rounded-full text-[0.85rem] text-white/85 backdrop-blur-md transition-all">
+            <motion.div 
+              key={i} 
+              animate={floatingAnimation}
+              transition={{ ...floatingAnimation.transition, delay: fact.delay }}
+              className="flex items-center gap-2 px-4 py-2 bg-[#9b5de5]/10 border border-[#9b5de5]/40 rounded-full text-[0.85rem] text-white/85 backdrop-blur-md hover:bg-[#9b5de5]/20 hover:-translate-y-1 hover:border-[#9b5de5] hover:shadow-[0_0_20px_rgba(155,93,229,0.2)] transition-all duration-300 cursor-default"
+            >
               <span>{fact.icon}</span>
               <span>{fact.text}</span>
-            </div>
+            </motion.div>
           ))}
         </motion.div>
 
@@ -93,7 +113,11 @@ export default function TwilightZone({ onOpenModal, onDive }) {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 mb-12">
           {OCEAN_CREATURES.twilight.map((creature) => (
             <motion.div key={creature.id} variants={itemVariants}>
-              <CreatureCard creature={creature} onClick={onOpenModal} />
+              <CreatureCard 
+                creature={creature} 
+                onClick={onOpenModal} 
+                isHighlighted={activeElementId === creature.id.toLowerCase()} 
+              />
             </motion.div>
           ))}
         </div>

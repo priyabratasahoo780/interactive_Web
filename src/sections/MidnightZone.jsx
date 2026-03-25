@@ -12,8 +12,21 @@ const containerVariants = {
 };
 
 const itemVariants = {
-  hidden: { opacity: 0, y: 40 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.8, ease: "easeOut" } }
+  hidden: { opacity: 0, y: 30 },
+  visible: { 
+    opacity: 1, 
+    y: 0, 
+    transition: { duration: 1.2, ease: [0.22, 1, 0.36, 1] } 
+  }
+};
+
+const floatingAnimation = {
+  y: [0, -8, 0],
+  transition: {
+    duration: 6,
+    repeat: Infinity,
+    ease: "easeInOut"
+  }
 };
 
 function AnimatedCounter({ from, to }) {
@@ -41,11 +54,13 @@ function AnimatedCounter({ from, to }) {
   return <span ref={nodeRef}>{from}</span>;
 }
 
-export default function MidnightZone({ onOpenModal, onDive }) {
+export default function MidnightZone({ onOpenModal, onDive, expStep, activeElementId }) {
+  const isActive = expStep && expStep.id === 'midnight';
+
   return (
     <section 
       id="midnight" 
-      className="relative min-h-screen z-[1] flex items-start px-4 md:px-6 pt-16 md:pt-32 pb-16 md:pb-32 pl-[4.5rem] md:pl-28 overflow-hidden bg-[linear-gradient(to_bottom,rgba(3,4,94,0.15),rgba(1,0,16,0.2))]"
+      className={`relative min-h-screen z-[1] flex items-start px-4 md:px-6 pt-16 md:pt-32 pb-16 md:pb-32 pl-[4.5rem] md:pl-28 overflow-hidden bg-[linear-gradient(to_bottom,rgba(3,4,94,0.15),rgba(1,0,16,0.2))] ${isActive ? 'experience-highlight' : ''}`}
     >
       <motion.div 
         className="w-full max-w-[1200px] mx-auto relative z-10"
@@ -70,19 +85,24 @@ export default function MidnightZone({ onOpenModal, onDive }) {
         {/* Stats Row */}
         <motion.div variants={itemVariants} className="grid grid-cols-2 lg:grid-cols-4 gap-4 my-10">
           {[
-            { t: 400, l: 'times surface pressure' },
-            { t: 2, l: '°C avg temperature' },
-            { t: 95, l: '% unexplored' },
-            { t: 8000, l: 'new species discovered yearly' }
+            { t: 400, l: 'times surface pressure', delay: 0 },
+            { t: 2, l: '°C avg temperature', delay: 0.2 },
+            { t: 95, l: '% unexplored', delay: 0.4 },
+            { t: 8000, l: 'new species discovered yearly', delay: 0.6 }
           ].map((stat, i) => (
-            <div key={i} className="text-center p-6 bg-white/5 border border-white/10 rounded-2xl hover:-translate-y-1 hover:border-[#ef233c]/40 hover:shadow-[0_10px_40px_rgba(239,35,60,0.2)] transition-all">
+            <motion.div 
+              key={i} 
+              animate={floatingAnimation}
+              transition={{ ...floatingAnimation.transition, delay: stat.delay }}
+              className="text-center p-6 bg-white/5 border border-white/10 rounded-2xl hover:bg-white/[0.08] hover:-translate-y-1 hover:border-[#ef233c]/40 hover:shadow-[0_10px_40px_rgba(239,35,60,0.2)] transition-all duration-300 cursor-default"
+            >
               <div className="font-head text-[clamp(1.8rem,4vw,3rem)] font-[900] text-[#00d4ff] tracking-[-0.04em] tabular-nums">
                 <AnimatedCounter from={0} to={stat.t} />
               </div>
               <div className="text-[0.8rem] text-white/50 leading-[1.4] mt-1.5">
                 {stat.l}
               </div>
-            </div>
+            </motion.div>
           ))}
         </motion.div>
 
@@ -93,7 +113,11 @@ export default function MidnightZone({ onOpenModal, onDive }) {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 mb-12">
           {OCEAN_CREATURES.midnight.map((creature) => (
             <motion.div key={creature.id} variants={itemVariants}>
-              <CreatureCard creature={creature} onClick={onOpenModal} />
+              <CreatureCard 
+                creature={creature} 
+                onClick={onOpenModal} 
+                isHighlighted={activeElementId === creature.id.toLowerCase()} 
+              />
             </motion.div>
           ))}
         </div>

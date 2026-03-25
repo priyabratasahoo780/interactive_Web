@@ -11,16 +11,31 @@ const containerVariants = {
 };
 
 const itemVariants = {
-  hidden: { opacity: 0, y: 40 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.8, ease: "easeOut" } }
+  hidden: { opacity: 0, y: 30 },
+  visible: { 
+    opacity: 1, 
+    y: 0, 
+    transition: { duration: 1.2, ease: [0.22, 1, 0.36, 1] } 
+  }
+};
+
+const floatingAnimation = {
+  y: [0, -15, 0],
+  transition: {
+    duration: 7,
+    repeat: Infinity,
+    ease: "easeInOut"
+  }
 };
 
 
-export default function AbyssZone({ onOpenModal, onDive }) {
+export default function AbyssZone({ onOpenModal, onDive, expStep, activeElementId }) {
+  const isActive = expStep && expStep.id === 'abyss';
+
   return (
     <section 
       id="abyss" 
-      className="relative min-h-screen z-[1] flex items-start px-4 md:px-6 pt-16 md:pt-32 pb-40 pl-[4.5rem] md:pl-28 overflow-hidden bg-[linear-gradient(to_bottom,rgba(3,4,94,0.15),rgba(0,0,5,0.2))]"
+      className={`relative min-h-screen z-[1] flex items-start px-4 md:px-6 pt-16 md:pt-32 pb-40 pl-[4.5rem] md:pl-28 overflow-hidden bg-[linear-gradient(to_bottom,rgba(3,4,94,0.15),rgba(0,0,5,0.2))] ${isActive ? 'experience-highlight' : ''}`}
     >
       {/* Abyss Glow Orbs */}
       <div className="absolute inset-0 pointer-events-none">
@@ -64,7 +79,11 @@ export default function AbyssZone({ onOpenModal, onDive }) {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 mb-16">
           {OCEAN_CREATURES.abyss.map((creature) => (
             <motion.div key={creature.id} variants={itemVariants}>
-              <CreatureCard creature={creature} onClick={onOpenModal} />
+              <CreatureCard 
+                creature={creature} 
+                onClick={onOpenModal} 
+                isHighlighted={activeElementId === creature.id.toLowerCase()} 
+              />
             </motion.div>
           ))}
         </div>
@@ -72,14 +91,19 @@ export default function AbyssZone({ onOpenModal, onDive }) {
         {/* Facts */}
         <motion.div variants={itemVariants} className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-12">
           {[
-            { icon: '🌍', text: "We've mapped more of Mars than the ocean floor" },
-            { icon: '🔬', text: 'New species are discovered in the deep sea every year' },
-            { icon: '🦑', text: 'Gigantism is common: creatures grow larger to survive the cold' }
+            { icon: '🌍', text: "We've mapped more of Mars than the ocean floor", delay: 0 },
+            { icon: '🔬', text: 'New species are discovered in the deep sea every year', delay: 0.4 },
+            { icon: '🦑', text: 'Gigantism is common: creatures grow larger to survive the cold', delay: 0.8 }
           ].map((fact, i) => (
-            <div key={i} className="flex items-start gap-3 p-5 bg-white/5 border border-[#00d4ff]/10 rounded-[14px] hover:border-[#00d4ff]/30 hover:bg-[#00d4ff]/5 hover:-translate-y-1 transition-all">
+            <motion.div 
+              key={i} 
+              animate={floatingAnimation}
+              transition={{ ...floatingAnimation.transition, delay: fact.delay }}
+              className="flex items-start gap-3 p-5 bg-white/5 border border-[#00d4ff]/10 rounded-[14px] hover:border-[#00d4ff]/30 hover:bg-[#00d4ff]/5 hover:-translate-y-1 transition-all duration-300 cursor-default shadow-lg"
+            >
               <span className="text-[1.5rem] shrink-0">{fact.icon}</span>
               <span className="text-[0.9rem] text-white/60 leading-[1.5]">{fact.text}</span>
-            </div>
+            </motion.div>
           ))}
         </motion.div>
 

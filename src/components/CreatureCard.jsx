@@ -2,12 +2,12 @@ import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X } from 'lucide-react';
 
-export const CreatureCard = React.memo(({ creature, onClick }) => {
+export const CreatureCard = React.memo(({ creature, onClick, isHighlighted }) => {
   return (
     <motion.article
       layoutId={`card-${creature.id}`}
       onClick={() => onClick(creature)}
-      className="relative bg-white/5 border border-white/10 rounded-[20px] p-6 cursor-pointer overflow-hidden backdrop-blur-md group"
+      className={`relative bg-white/5 border border-white/10 rounded-[20px] p-6 cursor-pointer overflow-hidden backdrop-blur-md group ${isHighlighted ? 'experience-highlight' : ''}`}
       whileHover={{ y: -8, scale: 1.02 }}
       transition={{ type: 'spring', stiffness: 300, damping: 20 }}
     >

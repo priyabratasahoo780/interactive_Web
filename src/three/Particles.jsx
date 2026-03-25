@@ -11,12 +11,12 @@ const vertexShader = /* glsl */ `
   varying float vDepth;
 
   void main() {
-    // Animate each particle with unique time offset
+    // Animate each particle with unique time offset and multiple frequencies
     vec3 pos = position;
     float t = uTime + aTime * 6.283;
-    pos.x += sin(t * 0.4) * 0.5;
-    pos.y += cos(t * 0.3) * 0.4;
-    pos.z += sin(t * 0.5 + 1.0) * 0.3;
+    pos.x += sin(t * 0.4) * 0.5 + sin(t * 0.1) * 0.2;
+    pos.y += cos(t * 0.3) * 0.4 + cos(t * 0.15) * 0.3;
+    pos.z += sin(t * 0.5 + 1.0) * 0.3 + sin(t * 0.2) * 0.1;
 
     // Shift entire field downward as we scroll deeper
     pos.y -= uScroll * 60.0;

@@ -1,9 +1,32 @@
 import { motion } from 'framer-motion';
 import { Anchor, Search } from 'lucide-react';
 
-export default function ShipwreckZone({ onDive }) {
+const itemVariants = {
+  hidden: { opacity: 0, y: 30 },
+  visible: { 
+    opacity: 1, 
+    y: 0, 
+    transition: { duration: 1.2, ease: [0.22, 1, 0.36, 1] } 
+  }
+};
+
+const floatingAnimation = {
+  y: [0, -10, 0],
+  transition: {
+    duration: 5,
+    repeat: Infinity,
+    ease: "easeInOut"
+  }
+};
+
+export default function ShipwreckZone({ onDive, expStep }) {
+  const isActive = expStep && expStep.id === 'shipwreck';
+
   return (
-    <section className="relative min-h-screen flex items-center justify-center py-24 overflow-hidden bg-[#000510]">
+    <section 
+      id="shipwreck"
+      className={`relative min-h-screen flex items-center justify-center py-24 overflow-hidden bg-[#000510] ${isActive ? 'experience-highlight' : ''}`}
+    >
       {/* Shipwreck Atmosphere */}
       <div className="absolute inset-0 opacity-40">
         <div className="absolute inset-0 bg-gradient-to-b from-[#001020] via-black to-[#000510]" />
@@ -28,8 +51,10 @@ export default function ShipwreckZone({ onDive }) {
 
       <div className="relative z-10 max-w-6xl mx-auto px-6 flex flex-col items-center">
         <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
+          variants={itemVariants}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true }}
           className="flex items-center gap-4 mb-8"
         >
           <div className="w-12 h-12 rounded-full bg-[#00d4ff]/10 border border-[#00d4ff]/30 flex items-center justify-center">
@@ -42,8 +67,11 @@ export default function ShipwreckZone({ onDive }) {
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
           <motion.div
-            initial={{ opacity: 0, x: -50 }}
-            whileInView={{ opacity: 1, x: 0 }}
+            variants={itemVariants}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true }}
+            animate={floatingAnimation}
             className="relative group"
           >
             {/* Shipwreck Graphic Simulation */}
@@ -66,8 +94,10 @@ export default function ShipwreckZone({ onDive }) {
           </motion.div>
 
           <motion.div
-            initial={{ opacity: 0, x: 50 }}
-            whileInView={{ opacity: 1, x: 0 }}
+            variants={itemVariants}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true }}
             className="flex flex-col gap-6"
           >
             <p className="text-[#00d4ff]/80 font-head text-[0.85rem] tracking-[0.2em] uppercase">

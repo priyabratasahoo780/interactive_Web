@@ -16,15 +16,22 @@ import SubmarineGlass from './components/SubmarineGlass';
 import PressureDistortion from './components/PressureDistortion';
 import { useScrollDepth, useMouseParallax } from './hooks/useScrollDepth';
 import { useAudioContext } from './hooks/useAudioContext';
+import { useExperienceMode } from './hooks/useExperienceMode';
 import Lenis from '@studio-freight/lenis';
 import { motion, useSpring, useTransform, AnimatePresence } from 'framer-motion';
+import ExperienceControls from './components/ExperienceControls';
+import ExperienceOverlay from './components/ExperienceOverlay';
 
 const SectionWrapper = React.memo(({ children }) => (
   <motion.div
-    initial={{ opacity: 0, y: 30 }}
-    whileInView={{ opacity: 1, y: 0 }}
+    initial={{ opacity: 0, y: 30, scale: 0.98 }}
+    whileInView={{ opacity: 1, y: 0, scale: 1 }}
     viewport={{ once: true, margin: "-10%" }}
-    transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1] }}
+    transition={{ 
+      duration: 1.5, 
+      ease: [0.22, 1, 0.36, 1],
+      scale: { duration: 2, ease: "easeOut" }
+    }}
     className="relative z-10"
   >
     {children}
@@ -42,8 +49,20 @@ function App() {
   const [isVoid, setIsVoid] = useState(false);
   const [isAudioEnabled, setIsAudioEnabled] = useState(false);
   const [lightningFlash, setLightningFlash] = useState(false);
-  
+  const [lenis, setLenis] = useState(null);
   const lenisRef = useRef(null);
+
+  const {
+    status: expStatus,
+    currentStep: expStep,
+    activeElementId: expElementId,
+    progress: expProgress,
+    start: startExp,
+    pause: pauseExp,
+    resume: resumeExp,
+    stop: stopExp,
+    speakManual: speakManual
+  } = useExperienceMode(lenis);
   const { 
     isInitialized,
     initAudio: _initAudio, 
@@ -111,15 +130,16 @@ function App() {
   // Lenis smooth scroll
   useEffect(() => {
     const lenis = new Lenis({
-      duration: 1.2,
+      duration: 1.5,
       easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
       orientation: 'vertical',
       gestureOrientation: 'vertical',
       smoothWheel: true,
-      wheelMultiplier: 1.1,
-      lerp: 0.1, // Faster responsiveness
+      wheelMultiplier: 1.0,
+      lerp: 0.05, // More viscous, premium feel
     });
     lenisRef.current = lenis;
+    setLenis(lenis);
 
     let raf;
     function loop(time) {
@@ -193,14 +213,14 @@ function App() {
   const memoizedMain = useMemo(() => (
     <main className={`relative z-10 transition-opacity duration-1000 ${showIntro ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
       <SectionWrapper><HeroSection onDive={() => diveToSection('sunlight')} /></SectionWrapper>
-      <SectionWrapper><SunlightZone id="sunlight" onDive={() => diveToSection('twilight')} onOpenModal={handleScan} /></SectionWrapper>
-      <SectionWrapper><TwilightZone id="twilight" onDive={() => diveToSection('shipwreck')} onOpenModal={handleScan} /></SectionWrapper>
-      <SectionWrapper><ShipwreckZone id="shipwreck" onDive={() => diveToSection('midnight')} /></SectionWrapper>
-      <SectionWrapper><MidnightZone id="midnight" onDive={() => diveToSection('abyss')} onOpenModal={handleScan} /></SectionWrapper>
-      <SectionWrapper><AbyssZone    id="abyss"    onDive={() => diveToSection('hadal')} onOpenModal={handleScan} /></SectionWrapper>
-      <SectionWrapper><HadalZone    id="hadal"    onDive={() => diveToSection('hero')}   onOpenModal={handleScan} /></SectionWrapper>
+      <SectionWrapper><SunlightZone id="sunlight" expStep={expStep} activeElementId={expElementId} onDive={() => diveToSection('twilight')} onOpenModal={handleScan} /></SectionWrapper>
+      <SectionWrapper><TwilightZone id="twilight" expStep={expStep} activeElementId={expElementId} onDive={() => diveToSection('shipwreck')} onOpenModal={handleScan} /></SectionWrapper>
+      <SectionWrapper><ShipwreckZone id="shipwreck" expStep={expStep} onDive={() => diveToSection('midnight')} /></SectionWrapper>
+      <SectionWrapper><MidnightZone id="midnight" expStep={expStep} activeElementId={expElementId} onDive={() => diveToSection('abyss')} onOpenModal={handleScan} /></SectionWrapper>
+      <SectionWrapper><AbyssZone    id="abyss"    expStep={expStep} activeElementId={expElementId} onDive={() => diveToSection('hadal')} onOpenModal={handleScan} /></SectionWrapper>
+      <SectionWrapper><HadalZone    id="hadal"    expStep={expStep} activeElementId={expElementId} onDive={() => diveToSection('hero')}   onOpenModal={handleScan} /></SectionWrapper>
     </main>
-  ), [showIntro, handleScan]);
+  ), [showIntro, handleScan, expStep, expElementId]);
 
 
 
@@ -308,6 +328,20 @@ function App() {
       <DepthHUD 
         scrollProgress={scrollProgress} 
         scannedCount={scannedSpecies.size}
+      />
+
+      <ExperienceOverlay 
+        status={expStatus} 
+        currentStep={expStep} 
+        progress={expProgress} 
+      />
+      
+      <ExperienceControls 
+        status={expStatus} 
+        onStart={startExp} 
+        onPause={pauseExp} 
+        onResume={resumeExp} 
+        onStop={stopExp} 
       />
 
       <div
