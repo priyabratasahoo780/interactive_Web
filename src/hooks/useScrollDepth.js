@@ -7,18 +7,7 @@ import { useEffect, useRef } from 'react';
  */
 export function useScrollDepth() {
   const scrollRef = useRef(0);
-
-  useEffect(() => {
-    const onScroll = () => {
-      const doc = document.documentElement;
-      const maxScroll = doc.scrollHeight - doc.clientHeight;
-      scrollRef.current = maxScroll > 0 ? window.scrollY / maxScroll : 0;
-    };
-    window.addEventListener('scroll', onScroll, { passive: true });
-    onScroll();
-    return () => window.removeEventListener('scroll', onScroll);
-  }, []);
-
+  // Using pure ref, updated synchronously by Lenis in App.jsx to avoid layout thrashing
   return scrollRef;
 }
 

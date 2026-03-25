@@ -25,7 +25,7 @@ const beamFrag = /* glsl */ `
   }
 `;
 
-export default function Flashlight({ mouseRef, scrollProgress }) {
+export default function Flashlight({ mouseRef, scrollRef }) {
   const lightRef = useRef();
   const beamRef = useRef();
   const { camera } = useThree();
@@ -41,7 +41,8 @@ export default function Flashlight({ mouseRef, scrollProgress }) {
     const mouse = mouseRef.current;
     
     // Only activate in deeper/darker zones (scroll > 0.4)
-    const targetIntensity = scrollProgress > 0.4 ? 0.8 : 0;
+    const scroll = scrollRef ? scrollRef.current : 0;
+    const targetIntensity = scroll > 0.4 ? 0.8 : 0;
     uniforms.uIntensity.value = THREE.MathUtils.lerp(uniforms.uIntensity.value, targetIntensity, 0.1);
 
     // Position light slightly in front of the camera and offset by mouse

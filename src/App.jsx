@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import OceanCanvas from './three/OceanCanvas';
 import DepthMeter from './components/DepthMeter';
 import Controls from './components/Controls';
@@ -18,6 +18,18 @@ import { useScrollDepth, useMouseParallax } from './hooks/useScrollDepth';
 import { useAudioContext } from './hooks/useAudioContext';
 import Lenis from '@studio-freight/lenis';
 import { motion, useSpring, useTransform, AnimatePresence } from 'framer-motion';
+
+const SectionWrapper = React.memo(({ children }) => (
+  <motion.div
+    initial={{ opacity: 0, y: 30 }}
+    whileInView={{ opacity: 1, y: 0 }}
+    viewport={{ once: true, margin: "-10%" }}
+    transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1] }}
+    className="relative z-10"
+  >
+    {children}
+  </motion.div>
+));
 
 function App() {
   const [selectedCreature, setSelectedCreature] = useState(null);
@@ -77,11 +89,9 @@ function App() {
     // Initialize context on gesture but keep muted as per request
     initAudio(true); 
     setShowIntro(false);
-    // Force a small scroll to ensure everything initializes
     if (lenisRef.current) {
-      setTimeout(() => {
-        lenisRef.current.scrollTo(0, { duration: 2, easing: (t) => t });
-      }, 100);
+      // Ensure we start at the top without a 2 second animation lock
+      lenisRef.current.scrollTo(0, { immediate: true });
     }
   };
 
@@ -129,23 +139,26 @@ function App() {
   useEffect(() => {
     let lastUpdate = 0;
     const handleScroll = (e) => {
-      // Throttle state updates for non-critical UI to 60fps
+      // e is the Lenis instance which provides progress (0 to 1) synchronously
+      const progress = e.progress || 0;
+      
+      // Update 3D scene reference synchronously with Lenis ticks
+      scrollRef.current = progress;
+
+      // Throttle state updates for non-critical React UI to ~60fps
       const now = performance.now();
       if (now - lastUpdate < 16) return;
       lastUpdate = now;
-
-      const el = document.documentElement;
-      const pct = el.scrollTop / (el.scrollHeight - el.clientHeight);
-      const clamped = Math.min(1, Math.max(0, pct || 0));
       
-      setScrollProgress(clamped);
-      setIsVoid(clamped > 0.88);
-      updateBeachVolume(clamped);
+      setScrollProgress(progress);
+      setIsVoid(progress > 0.88);
+      updateBeachVolume(progress);
     };
 
     if (lenisRef.current) {
       lenisRef.current.on('scroll', handleScroll);
     }
+    
     return () => {
       if (lenisRef.current) lenisRef.current.off('scroll', handleScroll);
     };
@@ -162,47 +175,34 @@ function App() {
     }
   };
 
-  const handleLightningStrike = () => {
+  const handleLightningStrike = useCallback(() => {
     triggerLightningSound();
-    // Visual HTML lightning flash
     setLightningFlash(true);
     setTimeout(() => setLightningFlash(false), 120);
-  };
+  }, [triggerLightningSound]);
 
-  // --- Interactive Section Tilting ---
-  const mouseX = useSpring(0, { stiffness: 100, damping: 30 });
-  const mouseY = useSpring(0, { stiffness: 100, damping: 30 });
+  const memoizedOceanCanvas = useMemo(() => (
+    <OceanCanvas 
+      scrollRef={scrollRef} 
+      mouseRef={mouseRef} 
+      isCycloneActive={isCycloneActive} 
+      triggerLightningSound={handleLightningStrike}
+    />
+  ), [scrollRef, mouseRef, isCycloneActive, handleLightningStrike]);
 
-  useEffect(() => {
-    const handleMouseMove = (e) => {
-      const x = (e.clientX / window.innerWidth - 0.5) * 2;
-      const y = (e.clientY / window.innerHeight - 0.5) * 2;
-      mouseX.set(x);
-      mouseY.set(y);
-    };
-    window.addEventListener('mousemove', handleMouseMove);
-    return () => window.removeEventListener('mousemove', handleMouseMove);
-  }, [mouseX, mouseY]);
+  const memoizedMain = useMemo(() => (
+    <main className={`relative z-10 transition-opacity duration-1000 ${showIntro ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
+      <SectionWrapper><HeroSection onDive={() => diveToSection('sunlight')} /></SectionWrapper>
+      <SectionWrapper><SunlightZone id="sunlight" onDive={() => diveToSection('twilight')} onOpenModal={handleScan} /></SectionWrapper>
+      <SectionWrapper><TwilightZone id="twilight" onDive={() => diveToSection('shipwreck')} onOpenModal={handleScan} /></SectionWrapper>
+      <SectionWrapper><ShipwreckZone id="shipwreck" onDive={() => diveToSection('midnight')} /></SectionWrapper>
+      <SectionWrapper><MidnightZone id="midnight" onDive={() => diveToSection('abyss')} onOpenModal={handleScan} /></SectionWrapper>
+      <SectionWrapper><AbyssZone    id="abyss"    onDive={() => diveToSection('hadal')} onOpenModal={handleScan} /></SectionWrapper>
+      <SectionWrapper><HadalZone    id="hadal"    onDive={() => diveToSection('hero')}   onOpenModal={handleScan} /></SectionWrapper>
+    </main>
+  ), [showIntro, handleScan]);
 
-  const rotateX = useTransform(mouseY, [-1, 1], [5, -5]);
-  const rotateY = useTransform(mouseX, [-1, 1], [-5, 5]);
 
-  const SectionWrapper = ({ children }) => (
-    <motion.div
-      initial={{ opacity: 0, y: 30 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: false, margin: "-10%" }}
-      transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1] }}
-      style={{
-        rotateX,
-        rotateY,
-        transformStyle: 'preserve-3d',
-      }}
-      className="relative z-10"
-    >
-      {children}
-    </motion.div>
-  );
 
   return (
     <>
@@ -262,12 +262,7 @@ function App() {
         }
       `}</style>
 
-      <OceanCanvas 
-        scrollRef={scrollRef} 
-        mouseRef={mouseRef} 
-        isCycloneActive={isCycloneActive} 
-        triggerLightningSound={handleLightningStrike}
-      />
+      {memoizedOceanCanvas}
 
       {lightningFlash && (
         <div style={{
@@ -362,15 +357,7 @@ function App() {
         </button>
       </div>
 
-      <main className={`relative z-10 perspective-1000 transition-opacity duration-1000 ${showIntro ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
-        <SectionWrapper><HeroSection onDive={() => diveToSection('sunlight')} /></SectionWrapper>
-        <SectionWrapper><SunlightZone id="sunlight" onDive={() => diveToSection('twilight')} onOpenModal={handleScan} /></SectionWrapper>
-        <SectionWrapper><TwilightZone id="twilight" onDive={() => diveToSection('shipwreck')} onOpenModal={handleScan} /></SectionWrapper>
-        <SectionWrapper><ShipwreckZone id="shipwreck" onDive={() => diveToSection('midnight')} /></SectionWrapper>
-        <SectionWrapper><MidnightZone id="midnight" onDive={() => diveToSection('abyss')} onOpenModal={handleScan} /></SectionWrapper>
-        <SectionWrapper><AbyssZone    id="abyss"    onDive={() => diveToSection('hadal')} onOpenModal={handleScan} /></SectionWrapper>
-        <SectionWrapper><HadalZone    id="hadal"    onDive={() => diveToSection('hero')}   onOpenModal={handleScan} /></SectionWrapper>
-      </main>
+      {memoizedMain}
 
       <CreatureModal
         creature={selectedCreature}

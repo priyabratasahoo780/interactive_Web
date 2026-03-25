@@ -1,7 +1,8 @@
+import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X } from 'lucide-react';
 
-export function CreatureCard({ creature, onClick }) {
+export const CreatureCard = React.memo(({ creature, onClick }) => {
   return (
     <motion.article
       layoutId={`card-${creature.id}`}
@@ -42,7 +43,7 @@ export function CreatureCard({ creature, onClick }) {
       </div>
     </motion.article>
   );
-}
+});
 
 export function CreatureModal({ creature, onClose }) {
   if (!creature) return null;

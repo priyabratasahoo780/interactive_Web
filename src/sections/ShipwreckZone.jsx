@@ -48,15 +48,15 @@ export default function ShipwreckZone({ onDive }) {
           >
             {/* Shipwreck Graphic Simulation */}
             <div className="relative h-64 md:h-96 w-full rounded-2xl border border-white/5 bg-black/60 overflow-hidden shadow-2xl">
-              <div className="absolute inset-0 bg-gradient-to-tr from-[#00d4ff]/10 to-transparent opacity-50" />
-              <div className="absolute inset-0 flex items-center justify-center">
-                {/* 3D-like Silhouette */}
-                <div className="w-4/5 h-1/2 bg-[#001428] rounded-[20%] skew-x-12 relative">
-                  <div className="absolute -top-10 left-10 w-4 h-20 bg-[#001428] skew-x-[-12deg]" />
-                  <div className="absolute top-0 right-10 w-4 h-24 bg-[#001428]" />
-                </div>
-              </div>
-              <div className="absolute inset-0 backdrop-blur-[1px] opacity-40" />
+              {/* High-quality Generated Shipwreck Render */}
+              <img 
+                src="/assets/shipwreck.png" 
+                alt="SS Azure Shipwreck" 
+                className="absolute inset-0 w-full h-full object-cover opacity-80 group-hover:opacity-100 group-hover:scale-105 transition-all duration-700 ease-out"
+              />
+              {/* Atmospheric Overlays */}
+              <div className="absolute inset-0 bg-gradient-to-tr from-[#00d5ff]/20 to-[#000510]/40 mix-blend-overlay pointer-events-none" />
+              <div className="absolute inset-0 bg-[linear-gradient(to_bottom,transparent_0%,rgba(0,5,16,0.9)_100%)] pointer-events-none" />
               <div className="absolute bottom-6 left-6 right-6 p-4 bg-black/80 backdrop-blur-md rounded-lg border border-white/10 opacity-0 group-hover:opacity-100 transition-opacity">
                 <p className="text-white/80 text-[0.8rem] font-light leading-relaxed">
                   The <span className="text-[#00d4ff] font-bold">"SS Azure"</span> — lost in the Great Storm of 1902. Now a home to coral and deep-sea eels.

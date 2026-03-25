@@ -1,5 +1,6 @@
 import { Canvas } from '@react-three/fiber';
 import { Suspense } from 'react';
+import { AdaptiveDpr, AdaptiveEvents } from '@react-three/drei';
 import CameraRig from './CameraRig';
 import DepthEnvironment from './DepthEnvironment';
 import LightRays from './LightRays';
@@ -35,7 +36,7 @@ function OceanScene({ scrollRef, mouseRef, isMobile, isCycloneActive, triggerLig
 
       <LightRays scrollRef={scrollRef} />
       <InfiniteWaves scrollRef={scrollRef} />
-      <Particles isMobile={isMobile} />
+      <Particles isMobile={isMobile} scrollRef={scrollRef} />
       {!isMobile && <Bubbles3D mouseRef={mouseRef} />}
       {!isMobile && <Swarm mouseRef={mouseRef} />}
       <Fish />
@@ -43,7 +44,7 @@ function OceanScene({ scrollRef, mouseRef, isMobile, isCycloneActive, triggerLig
       <Jellyfish />
       <FloatingRocks />
       <KelpForest />
-      <Flashlight mouseRef={mouseRef} scrollProgress={scrollRef.current} />
+      <Flashlight mouseRef={mouseRef} scrollRef={scrollRef} />
       <CycloneEvent isActive={isCycloneActive} onLightningStrike={triggerLightningSound} />
 
       {!isMobile && (
@@ -72,13 +73,18 @@ export default function OceanCanvas({ scrollRef, mouseRef, isCycloneActive, trig
         gl={{
           antialias: !isMobile,
           powerPreference: 'high-performance',
+          stencil: false,
+          depth: true,
+          alpha: false,
           outputColorSpace: THREE.SRGBColorSpace,
           toneMapping: THREE.ACESFilmicToneMapping,
           toneMappingExposure: 1.2,
         }}
-        dpr={isMobile ? 1 : Math.min(window.devicePixelRatio, 2)}
-        style={{ width: '100%', height: '100%' }}
+        dpr={isMobile ? [1, 1] : [1, 2]}
+        style={{ width: '100%', height: '100%', background: '#000005' }}
       >
+        <AdaptiveDpr pixelated />
+        <AdaptiveEvents />
         <Suspense fallback={null}>
           <OceanScene 
             scrollRef={scrollRef} 

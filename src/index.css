@@ -23,18 +23,38 @@
 
 @layer base {
   html {
-    scroll-behavior: smooth;
     scrollbar-color: #00d4ff #03045e;
     scrollbar-width: thin;
+  }
+
+  html.lenis, html.lenis body {
+    height: auto;
+  }
+
+  .lenis.lenis-smooth {
+    scroll-behavior: auto !important;
+  }
+
+  .lenis.lenis-smooth [data-lenis-prevent] {
+    overscroll-behavior: contain;
+  }
+
+  .lenis.lenis-stopped {
+    overflow: hidden;
+  }
+
+  .lenis.lenis-scrolling iframe {
+    pointer-events: none;
   }
 
   body {
     font-family: var(--font-body);
     color: #e8f4f8;
     background-color: var(--color-ocean-sunlightEnd);
-    overflow-x: hidden;
+    overflow-x: clip;
     -webkit-font-smoothing: antialiased;
   }
+
 
   /* Custom scrollbar */
   ::-webkit-scrollbar { width: 6px; }
@@ -93,4 +113,7 @@ body.day-mode .section-abyss { background: linear-gradient(180deg, #03045e 0%, #
 
 .animate-float-subtle {
   animation: float-subtle 4s ease-in-out infinite;
+  will-change: transform;
 }
+
+

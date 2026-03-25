@@ -52,7 +52,7 @@ const fragmentShader = /* glsl */ `
   }
 `;
 
-export default function Particles({ isMobile }) {
+export default function Particles({ isMobile, scrollRef }) {
   const meshRef = useRef();
   const COUNT = isMobile ? 600 : 2000;
 
@@ -73,12 +73,12 @@ export default function Particles({ isMobile }) {
     uScroll: { value: 0 },
   }), []);
 
-  useFrame(({ clock }, delta) => {
+  useFrame(({ clock }) => {
     if (meshRef.current) {
       uniforms.uTime.value = clock.getElapsedTime();
-      const doc = document.documentElement;
-      const max = doc.scrollHeight - doc.clientHeight;
-      uniforms.uScroll.value = max > 0 ? window.scrollY / max : 0;
+      if (scrollRef && scrollRef.current !== undefined) {
+        uniforms.uScroll.value = scrollRef.current;
+      }
     }
   });
 
